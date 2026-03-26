@@ -75,7 +75,7 @@ After fixing a compatibility issue in the `FortranIO.py` file I was able to run 
 psls.py -P -V psls.yaml
 ```
 
-I obtained the following plots (also included in the repository): 
+I obtained the following plots: 
 
-![psd](project/psls/0012069449_fig1.png)
-![LC](project/psls/0012069449_fig5.png)
+![psd](psls/0012069449_fig1.png)
+![LC](psls/0012069449_fig5.png)
