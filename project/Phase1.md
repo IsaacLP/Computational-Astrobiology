@@ -61,18 +61,21 @@ From an observational standpoint, stellar activity poses a critical challenge to
 
 [3] R. Samadi _et al._, “The PLATO Solar-like Light-curve Simulator: A tool to generate realistic stellar light-curves with instrumental effects representative of the PLATO mission,” _A&A_, vol. 624, p. A117, Apr. 2019, doi: [10.1051/0004-6361/201834822](https://doi.org/10.1051/0004-6361/201834822).
 
-A. C. Cameron, “The Impact of Stellar Activity on the Detection and Characterization of Exoplanets,” in _Handbook of Exoplanets_, Springer, Cham, 2018, pp. 1791–1799. doi: [10.1007/978-3-319-55333-7_23](https://doi.org/10.1007/978-3-319-55333-7_23).
+[4] A. C. Cameron, “The Impact of Stellar Activity on the Detection and Characterization of Exoplanets,” in _Handbook of Exoplanets_, Springer, Cham, 2018, pp. 1791–1799. doi: [10.1007/978-3-319-55333-7_23](https://doi.org/10.1007/978-3-319-55333-7_23).
 
-S. C. C. Barros _et al._, “Improving transit characterisation with Gaussian process modelling of stellar variability,” _A&A_, vol. 634, p. A75, Feb. 2020, doi: [10.1051/0004-6361/201936086](https://doi.org/10.1051/0004-6361/201936086).
-
-
+[5] S. C. C. Barros _et al._, “Improving transit characterisation with Gaussian process modelling of stellar variability,” _A&A_, vol. 634, p. A75, Feb. 2020, doi: [10.1051/0004-6361/201936086](https://doi.org/10.1051/0004-6361/201936086).
 
 # Setup of PSLS
 
-After installing and performing some fixes I ran the example using:
+Install the source code from https://pypi.org/project/psls/#files.
+
+After fixing a compatibility issue in the `FortranIO.py` file I was able to run the example included in the package with the following comand:
 
 ```
 psls.py -P -V psls.yaml
 ```
 
-I obtained the plots included in the repository. 
+I obtained the following plots (also included in the repository): 
+
+![psd](project/psls/0012069449_fig1.png)
+![LC](project/psls/0012069449_fig5.png)
