@@ -77,5 +77,5 @@ psls.py -P -V psls.yaml
 
 I obtained the following plots: 
 
-![psd](psls/0012069449_fig1.png)
-![LC](psls/0012069449_fig5.png)
+![psd](project/PSLS/0012069449_fig1.png)
+![LC](project/PSLS/0012069449_fig5.png)
