@@ -1,0 +1,109 @@
+# PSLS configuration — Class 2: Planet + mild activity
+# Small stochastic activity, no spots, planet transit present.
+# Transit signal should be detectable above the noise floor.
+
+Observation:
+  QuarterDuration: [90., 90., 90.]
+  MasterSeed: 1000000003
+  Gaps:
+    Enable: 1
+    Seed: -1
+    InterQuarterGapDuration: 3.
+    RandomGapDuration: 0.
+    RandomGapTimeFraction: 0.5
+    RandomGapStep: 0.
+    PeriodicGapCadence: 5.
+    PeriodicGapDuration: 20.
+    PeriodicGapJitter: 2.
+    PeriodicGapStep: 0.
+
+Instrument:
+  Sampling: 25.
+  IntegrationTime: 21.
+  GroupID: [1, 2, 3, 4]
+  NCamera: 6
+  TimeShift: 6.25
+  RandomNoise:
+    Enable: 1
+    Type: PLATO_SIMU
+    NSR: 73.
+  Systematics:
+    Enable: 1
+    Table: systematics/PLATO_systematics_BOL_V2.npy
+    Version: 2
+    DriftLevel: any
+    Seed: -1
+
+Star:
+  Mag: 10.
+  ID: 10000003
+  ModelType: grid
+  ModelDir: models/
+  ModelName: grid_v0.1_ov0-plato
+  ES: ms
+  Teff: 5778.
+  Logg: 4.438
+  SurfaceRotationPeriod: 26.   # slow rotator — Sun-like, mild variability
+  CoreRotationFreq: 0.
+  Inclination: 30.
+
+Oscillations:
+  Enable: 1
+  numax: 3090.
+  delta_nu: 135.
+  DPI: -1.
+  q: 0.
+  SurfaceEffects: 1
+  Seed: -1
+
+Activity:
+  Enable: 1                    # mild stochastic activity
+  Sigma: 40.                   # moderate amplitude (ppm) — comparable to PSLS default
+  Tau: 0.2
+  Seed: -1
+
+  Spot:
+    Enable: 0                  # no spots — activity kept low
+    dOmega: 0.
+    MuStar: 0.59
+    MuSpot: 0.78
+    Radius: [2.5]
+    Latitude: [0.0]
+    Longitude: [0.0]
+    Lifetime: [30]
+    TimeMax: [-1]
+    Contrast: [0.7]
+    Modulation: 0.
+    Seed: -1
+
+  Flare:
+    Enable: 0                  # no flares
+    MeanPeriod: 10
+    Amplitude: 500.
+    UpDown: 0.1
+    MeanDuration: -1
+    DurationDispersion: -1
+    Seed: -1
+
+Granulation:
+  Enable: 1
+  Type: 1
+  Seed: -1
+
+Transit:
+  Enable: 1                    # planet present
+  PlanetRadius: 2.0            # ~2 R_Earth (super-Earth / sub-Neptune) in Jupiter radii: 2*6371/71492 ≈ 0.178
+                               # expressed in Jupiter radii as required by PSLS
+  # To specify in Jupiter radii: R_Jup = 71492 km, R_Earth = 6371 km
+  # 2 R_Earth = 2*6371/71492 ≈ 0.178 R_Jup
+  # 4 R_Earth ≈ 0.356 R_Jup
+  # Here we use 0.2 R_Jup ≈ 2.25 R_Earth — a detectable super-Earth
+  PlanetRadius: 0.2
+  OrbitalPeriod: 15.           # 15-day orbit — multiple transits in 270-day baseline
+  PlanetSemiMajorAxis: 0.12    # AU, consistent with ~15-day period around Sun-like star
+  OrbitalAngle: 0.
+  LimbDarkeningCoefficients: [0.25, 0.75]
+
+External:
+  Enable: 0
+  FilePath: examples/external_example.txt
