@@ -14,12 +14,13 @@ Usage
   python generate_dataset.py --out_dir /data/plato_lcs
 
 The script writes:
-  <out_dir>/lightcurves/   ← one .npy per LC  (time, flux in ppm)
+  <out_dir>/lightcurves/   ← one .dat per LC  (raw PSLS output)
   <out_dir>/metadata.csv   ← one row per LC with all labels & parameters
   <out_dir>/configs/       ← the PSLS YAML used for each LC (reproducibility)
 """
 
 import argparse
+import shutil
 import subprocess
 import tempfile
 from pathlib import Path
@@ -62,6 +63,16 @@ LOGG_RANGE  = (4.20,   4.55)     # cgs — uniform draw
 def _loguniform(rng: np.random.Generator, lo: float, hi: float) -> float:
     """Draw one sample from a log-uniform distribution on [lo, hi]."""
     return float(np.exp(rng.uniform(np.log(lo), np.log(hi))))
+
+
+def _powerlaw(rng: np.random.Generator, lo: float, hi: float, alpha: float) -> float:
+    """Draw one sample from a truncated power law p(x) ∝ x^{-alpha} on [lo, hi].
+    Uses inverse-CDF method; degenerates to log-uniform when alpha == 1."""
+    if abs(alpha - 1.0) < 1e-10:
+        return _loguniform(rng, lo, hi)
+    exp = 1.0 - alpha
+    u = rng.uniform(0.0, 1.0)
+    return float((u * (hi**exp - lo**exp) + lo**exp) ** (1.0 / exp))
 
 
 def _uniform(rng: np.random.Generator, lo: float, hi: float) -> float:
@@ -194,6 +205,9 @@ def sample_spot_params(activity_class: str, rng: np.random.Generator) -> dict | 
     }
 
 
+FLARE_AMPLITUDE_ALPHA = 2.0   # power-law index for flare amplitude (Davenport 2016)
+
+
 def sample_flare_params(activity_class: str, rng: np.random.Generator) -> dict:
     """
     Flare parameters.  Grounded in Davenport 2016 (Kepler flare statistics).
@@ -202,7 +216,8 @@ def sample_flare_params(activity_class: str, rng: np.random.Generator) -> dict:
       - mild:  ~3–10 days between flares (low-activity solar-like)
       - strong: ~0.3–2 days (active star; consistent with P_rot < 18 d)
 
-    Amplitude (ppm): log-uniform — flare energies span orders of magnitude.
+    Amplitude (ppm): power-law distributed p(A) ∝ A^{-α}, α=2.0 — flare
+      amplitudes follow a power law (Davenport 2016, Lacy+1976).
       - mild:   200–800 ppm   (detectable but sub-dominant)
       - strong: 800–5000 ppm  (can mimic or swamp short transits)
 
@@ -213,10 +228,10 @@ def sample_flare_params(activity_class: str, rng: np.random.Generator) -> dict:
 
     if activity_class == "mild":
         mean_period = round(_loguniform(rng, 60.0, 500.0), 2)
-        amplitude   = round(_loguniform(rng, 200.0, 800.0), 1)
+        amplitude   = round(_powerlaw(rng, 200.0, 800.0, FLARE_AMPLITUDE_ALPHA), 1)
     else:  # strong
         mean_period = round(_loguniform(rng, 0.3, 2.0), 3)
-        amplitude   = round(_loguniform(rng, 800.0, 5000.0), 1)
+        amplitude   = round(_powerlaw(rng, 800.0, 5000.0, FLARE_AMPLITUDE_ALPHA), 1)
 
     updown = round(_uniform(rng, 0.05, 0.20), 3)
 
@@ -333,7 +348,7 @@ BASE_CONFIG = {
             "Enable": 1,
             "Table": "systematics/PLATO_systematics_BOL_V2.npy",
             "Version": 2,
-            "DriftLevel": "any",
+            "DriftLevel": "low",
             "Seed": -1,
         },
     },
@@ -666,7 +681,8 @@ def run_pipeline(args):
     failed  = 0
 
     for job in tqdm(jobs, desc="Simulating"):
-        cfg = build_config(job)
+        cfg   = build_config(job)
+        lc_id = f"{job['star_id']:010d}"
 
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)
@@ -682,14 +698,7 @@ def run_pipeline(args):
                 continue
 
             time_days, flux_var = result
-
-        # ---------------------------------------------------------------
-        # Save light curve
-        # ---------------------------------------------------------------
-        lc_id   = f"{job['star_id']:010d}"
-        lc_file = lc_dir / f"{lc_id}.npy"
-        array = np.array([time_days, flux_var]).T
-        np.savetxt(lc_file,array)
+            shutil.copy2(dat_path, lc_dir / f"{lc_id}.dat")
 
         # Save config YAML for reproducibility
         cfg_file = cfg_dir / f"{lc_id}.yaml"
