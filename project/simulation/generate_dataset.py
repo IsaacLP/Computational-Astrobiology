@@ -151,7 +151,7 @@ def sample_activity_tau(activity_class: str, rng: np.random.Generator) -> float:
         return round(_uniform(rng, 0.30, 3.00), 3)
 
 
-def sample_spot_params(activity_class: str, rng: np.random.Generator) -> dict | None:
+def sample_spot_params(activity_class: str, rng: np.random.Generator, current_prot: float) -> dict | None:
     """
     Return a dict of all PSLS Spot sub-parameters for one spot group
 
@@ -180,17 +180,22 @@ def sample_spot_params(activity_class: str, rng: np.random.Generator) -> dict | 
     """
 
     if activity_class == "mild":
-        radius    = round(_uniform(rng, 1.5, 5.0), 2)
-        contrast  = round(_uniform(rng, 0.60, 0.78), 3)
-        lifetime  = round(_uniform(rng, 20.0, 90.0), 1)
-        domega    = round(_uniform(rng, 0.00, 0.20), 3)
+        radius    = round(_uniform(rng, 1.0, 3.0), 2)     # was 1.5-5.0
+        contrast  = round(_uniform(rng, 0.70, 0.85), 3)   # lighter spots, was 0.60-0.78
+        # lifetime as a FRACTION of P_rot, then convert below
+        life_in_prot = _uniform(rng, 0.3, 1.0)            # decays within ~1 rotation
+        domega    = round(_uniform(rng, 0.15, 0.30), 3)   # more diff. rotation → smearing
         lat_range = 25.0
     else:  # strong
-        radius    = round(_uniform(rng, 4.0, 10.0), 2)
-        contrast  = round(_uniform(rng, 0.35, 0.65), 3)
-        lifetime  = round(_uniform(rng, 10.0, 60.0), 1)
-        domega    = round(_uniform(rng, 0.00, 0.10), 3)
+        radius    = round(_uniform(rng, 5.0, 10.0), 2)    # was 4.0-10.0
+        contrast  = round(_uniform(rng, 0.35, 0.55), 3)   # darker spots
+        life_in_prot = _uniform(rng, 2.0, 6.0)            # persists many rotations
+        domega    = round(_uniform(rng, 0.00, 0.08), 3)   # near solid-body
         lat_range = 40.0
+
+    # convert lifetime to days using THIS star's rotation period so the
+    # coherence (lifetime/P_rot) ordering is preserved regardless of P_rot draw
+    lifetime  = round(life_in_prot * current_prot, 1)
 
     latitude  = round(_uniform(rng, -lat_range, lat_range), 2)
     longitude = round(_uniform(rng, 0.0, 360.0), 2)
@@ -518,7 +523,7 @@ def build_job_list(n_per_class: int, rng_seed: int = 42) -> list[dict]:
         prot        = sample_rotation_period(activity_class, rng)
         sigma       = sample_activity_sigma(activity_class, rng)
         tau         = sample_activity_tau(activity_class, rng)
-        spot        = sample_spot_params(activity_class, rng)
+        spot        = sample_spot_params(activity_class, rng, current_prot=prot)
         flare       = sample_flare_params(activity_class, rng)
         inclination = sample_inclination(rng)
 
@@ -614,49 +619,6 @@ def run_psls(cfg: dict, work_dir: Path) -> Path | None:
         return None
 
 
-def load_psls_output(dat_path: Path) -> tuple[np.ndarray, np.ndarray] | None:
-    """Parse PSLS .dat output → (time_days, relative flux variation) arrays."""
-    try:
-        data = np.loadtxt(dat_path, comments="#")
-        if data.ndim < 2 or data.shape[0] == 0 or data.shape[1] < 2:
-            return None
-        time_s   = data[:, 0]
-        flux_var = data[:, 1] * 1e-4
-        return time_s / 86400.0, flux_var
-    except Exception as exc:
-        print(f"\n[LOAD ERROR] {dat_path}: {exc}")
-        return None
-
-# ---------------------------------------------------------------------------
-# SNR proxy  (RMS of folded residuals after naive period search)
-# ---------------------------------------------------------------------------
-
-def snr_proxy(time: np.ndarray, flux: np.ndarray, period: float | None) -> float:
-    """
-    Estimate transit SNR:
-      • If period known: use box-fold depth / scatter ratio
-      • Otherwise: return ratio of low- to high-frequency power
-    """
-    if len(flux) < 10:
-        return 0.0
-    if period is None or period <= 0:
-        # low/high power ratio as activity proxy
-        fft = np.abs(np.fft.rfft(flux - flux.mean())) ** 2
-        n   = len(fft)
-        low = fft[: n // 10].mean()
-        hi  = fft[n // 2 :].mean() + 1e-9
-        return float(low / hi)
-
-    # Simple box-fold depth estimate
-    phase = (time % period) / period
-    in_transit = phase < 0.05
-    if in_transit.sum() < 3:
-        return 0.0
-    depth   = flux[~in_transit].mean() - flux[in_transit].mean()
-    scatter = flux[~in_transit].std() + 1e-9
-    return float(depth / scatter)
-
-
 # ---------------------------------------------------------------------------
 # Main pipeline
 # ---------------------------------------------------------------------------
@@ -689,12 +651,6 @@ def run_pipeline(args):
                 failed += 1
                 continue
 
-            result = load_psls_output(dat_path)
-            if result is None:
-                failed += 1
-                continue
-
-            time_days, flux_var = result
             shutil.copy2(dat_path, lc_dir / f"{lc_id}.dat")
 
         # Save config YAML for reproducibility
@@ -742,9 +698,6 @@ def run_pipeline(args):
             transit_depth_ppm    = transit_depth_ppm(pl["radius_rjup"]) if pl else None,
             # LC metadata
             seed                 = job["seed"],
-            n_points             = len(time_days),
-            duration_days        = float(time_days[-1] - time_days[0]) if len(time_days) > 1 else 0.0,
-            snr_proxy            = snr_proxy(time_days, flux_var, pl["period_days"] if pl else None),
         ))
 
     # -------------------------------------------------------------------
