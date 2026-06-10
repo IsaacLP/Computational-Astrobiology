@@ -9,8 +9,8 @@ Generates ~6000-7000 labeled light curves across 4 classes using PSLS:
 
 Usage
 -----
-  python generate_dataset.py                   # full run (~6000 LCs)
-  python generate_dataset.py --n_per_class 50  # quick smoke-test
+  python generate_dataset.py                   # full run with defaults
+  python generate_dataset.py n_per_class       # specify number of LCs per class (default 1500 → ~6000 total)
   python generate_dataset.py --out_dir /data/plato_lcs
 
 The script writes:
@@ -788,7 +788,7 @@ if __name__ == "__main__":
         description="Phase 2: Generate PSLS light curve dataset for transit ML."
     )
     parser.add_argument(
-        "--n_per_class", type=int, default=1500,
+        "n_per_class", type=int, default=1500,
         help="Number of light curves per class (default: 1500 → ~6000 total)"
     )
     parser.add_argument(
