@@ -135,7 +135,7 @@ def sample_activity_sigma(activity_class: str, rng: np.random.Generator) -> floa
     if activity_class == "mild":
         return round(_loguniform(rng, 25.0, 100.0), 2)
     else:  # strong
-        return round(_loguniform(rng, 60.0, 300.0), 2)
+        return round(_loguniform(rng, 80.0, 400.0), 2)
 
 
 def sample_activity_tau(activity_class: str, rng: np.random.Generator) -> float:
@@ -182,15 +182,15 @@ def sample_spot_params(activity_class: str, rng: np.random.Generator) -> dict | 
     if activity_class == "mild":
         radius    = round(_uniform(rng, 1.5, 5.0), 2)
         contrast  = round(_uniform(rng, 0.60, 0.78), 3)
-        lifetime  = round(_uniform(rng, 20.0, 100.0), 1)
-        domega    = round(_uniform(rng, 0.00, 0.25), 3)
+        lifetime  = round(_uniform(rng, 20.0, 90.0), 1)
+        domega    = round(_uniform(rng, 0.00, 0.20), 3)
         lat_range = 25.0
     else:  # strong
-        radius    = round(_uniform(rng, 3.5, 12.0), 2)
-        contrast  = round(_uniform(rng, 0.25, 0.55), 3)
-        lifetime  = round(_uniform(rng, 30.0, 200.0), 1)
-        domega    = round(_uniform(rng, 0.00, 0.15), 3)
-        lat_range = 35.0
+        radius    = round(_uniform(rng, 4.0, 10.0), 2)
+        contrast  = round(_uniform(rng, 0.35, 0.65), 3)
+        lifetime  = round(_uniform(rng, 10.0, 60.0), 1)
+        domega    = round(_uniform(rng, 0.00, 0.10), 3)
+        lat_range = 40.0
 
     latitude  = round(_uniform(rng, -lat_range, lat_range), 2)
     longitude = round(_uniform(rng, 0.0, 360.0), 2)
@@ -227,11 +227,11 @@ def sample_flare_params(activity_class: str, rng: np.random.Generator) -> dict:
     """
 
     if activity_class == "mild":
-        mean_period = round(_loguniform(rng, 60.0, 500.0), 2)
-        amplitude   = round(_powerlaw(rng, 200.0, 800.0, FLARE_AMPLITUDE_ALPHA), 1)
+        mean_period = round(_loguniform(rng, 4.0, 15.0), 2)
+        amplitude   = round(_powerlaw(rng, 150.0, 800.0, FLARE_AMPLITUDE_ALPHA), 1)
     else:  # strong
-        mean_period = round(_loguniform(rng, 0.3, 2.0), 3)
-        amplitude   = round(_powerlaw(rng, 800.0, 5000.0, FLARE_AMPLITUDE_ALPHA), 1)
+        mean_period = round(_loguniform(rng, 0.5, 4.0), 3)
+        amplitude   = round(_powerlaw(rng, 500.0, 5000.0, FLARE_AMPLITUDE_ALPHA), 1)
 
     updown = round(_uniform(rng, 0.05, 0.20), 3)
 
@@ -245,7 +245,7 @@ def sample_flare_params(activity_class: str, rng: np.random.Generator) -> dict:
     }
 
 
-def sample_inclination(activity_class: str, rng: np.random.Generator) -> float:
+def sample_inclination(rng: np.random.Generator) -> float:
     """
     Stellar inclination (degrees from pole-on = 0° to equator-on = 90°).
     Uses the physically correct prior: uniform in cos(i).
@@ -254,10 +254,7 @@ def sample_inclination(activity_class: str, rng: np.random.Generator) -> float:
     Active classes are biased toward high inclinations to ensure the spot
     signature is prominent enough to challenge the transit classifier.
     """
-    if activity_class == "strong":
-        return round(_inclination_from_cosi(rng, i_min_deg=45.0, i_max_deg=90.0), 2)
-    elif activity_class == "mild":
-        return round(_inclination_from_cosi(rng, i_min_deg=25.0, i_max_deg=85.0), 2)
+    return round(_inclination_from_cosi(rng, i_min_deg=5.0, i_max_deg=90.0), 2)
 
 
 def sample_planet_params(rng: np.random.Generator) -> dict:
@@ -321,7 +318,7 @@ BASE_CONFIG = {
         "QuarterDuration": QUARTER_DURATION,
         "MasterSeed": None,          # filled per LC
         "Gaps": {
-            "Enable": 1,
+            "Enable": 0,
             "Seed": -1,
             "InterQuarterGapDuration": 3.0,
             "RandomGapDuration": 0.0,
@@ -348,7 +345,7 @@ BASE_CONFIG = {
             "Enable": 1,
             "Table": "systematics/PLATO_systematics_BOL_V2.npy",
             "Version": 2,
-            "DriftLevel": "low",
+            "DriftLevel": "min",
             "Seed": -1,
         },
     },
@@ -523,7 +520,7 @@ def build_job_list(n_per_class: int, rng_seed: int = 42) -> list[dict]:
         tau         = sample_activity_tau(activity_class, rng)
         spot        = sample_spot_params(activity_class, rng)
         flare       = sample_flare_params(activity_class, rng)
-        inclination = sample_inclination(activity_class, rng)
+        inclination = sample_inclination(rng)
 
         jobs.append(dict(
             star_id         = star_id,
