@@ -111,17 +111,17 @@ def sample_rotation_period(activity_class: str, rng: np.random.Generator) -> flo
     sinusoidal spot modulation, which aliases with P_transit.
 
     Ranges grounded in McQuillan et al. 2014 (Kepler rotation survey):
-      - mild: 20-35 d  (solar-like / magnetically inactive)
-      - strong: 5-18 d  (fast rotator, young or active G/K dwarf)
+      - mild: 20-35 d  (solar-like; Sun ≈ 25 d sidereal)
+      - strong: 8-22 d  (moderately active G/K dwarf)
 
-    Mild class upper end overlaps strong lower end [15-18 d] so the
+    Mild class upper end overlaps strong lower end [20-22 d] so the
     classifier cannot trivially use P_rot as a class proxy.
     """
 
     if activity_class == "mild":
-        return round(_uniform(rng, 15.0, 30.0), 2)
+        return round(_uniform(rng, 20.0, 35.0), 2)
     else:  # strong
-        return round(_uniform(rng, 5.0, 18.0), 2)
+        return round(_uniform(rng, 8.0, 22.0), 2)
 
 
 def sample_activity_sigma(activity_class: str, rng: np.random.Generator) -> float:
@@ -129,13 +129,14 @@ def sample_activity_sigma(activity_class: str, rng: np.random.Generator) -> floa
     Stochastic magnetic activity amplitude (ppm).  Log-uniform because the
     quantity spans an order of magnitude.
 
-    Ranges chosen so mild and strong distributions overlap on [60, 80] ppm —
+    Ranges chosen so mild and strong distributions overlap on [25, 40] ppm —
     the classifier cannot threshold on activity amplitude alone.
+    Solar stochastic photometric variability is ~10–30 ppm.
     """
     if activity_class == "mild":
-        return round(_loguniform(rng, 25.0, 100.0), 2)
+        return round(_loguniform(rng, 5.0, 40.0), 2)
     else:  # strong
-        return round(_loguniform(rng, 80.0, 400.0), 2)
+        return round(_loguniform(rng, 25.0, 150.0), 2)
 
 
 def sample_activity_tau(activity_class: str, rng: np.random.Generator) -> float:
@@ -146,9 +147,9 @@ def sample_activity_tau(activity_class: str, rng: np.random.Generator) -> float:
     roughly 0.1-0.5 days.  Strong-class Tau extends into this regime.
     """
     if activity_class == "mild":
-        return round(_uniform(rng, 0.10, 1.00), 3)
+        return round(_uniform(rng, 0.5, 2.5), 3)
     else:  # strong
-        return round(_uniform(rng, 0.30, 3.00), 3)
+        return round(_uniform(rng, 1.0, 5.0), 3)
 
 
 def sample_spot_params(activity_class: str, rng: np.random.Generator, current_prot: float) -> dict | None:
@@ -158,13 +159,13 @@ def sample_spot_params(activity_class: str, rng: np.random.Generator, current_pr
     Parameter notes
     ---------------
     Radius   : angular diameter of spot in degrees.  Flux deficit ∝ sin²(α).
-               Solar umbral spots are ~1–3°; active-star spots reach 8–10°.
-    Contrast : fs = spot flux / stellar flux.  Solar umbra: fs ≈ 0.52–0.65.
-               Mild stars have lighter (warmer) spots: fs ≈ 0.60–0.78.
-               Strong stars have darker spots: fs ≈ 0.38–0.62.
+               Solar spots are ~0.5–2°; moderately active stars reach 2–5°.
+    Contrast : fs = spot flux / stellar flux.  Solar area-averaged value ≈ 0.62–0.75.
+               Mild (solar-like): fs ≈ 0.62–0.80.
+               Strong: fs ≈ 0.40–0.65.
     Lifetime : spot survival time in days (spotintime converts to units of
-               P_rot internally: taui[i] / prot).  Solar spots last days–months.
-    Latitude : signed latitude in degrees.  Solar active belt: ±35°.
+               P_rot internally: taui[i] / prot).  Solar spots last days–weeks.
+    Latitude : signed latitude in degrees.  Solar active belt: ±20°.
     Longitude: initial longitude in [0°, 360°].  Randomised per instance so
                different LCs have different spot–transit phase relationships.
     TimeMax  : time of maximum contrast.  Set to -1 so PSLS draws it
@@ -174,24 +175,24 @@ def sample_spot_params(activity_class: str, rng: np.random.Generator, current_pr
 
     Overlap constraint
     ------------------
-    mild Radius   ∈ [1.5, 5.0],  strong Radius   ∈ [3.5, 9.0]  → overlap [3.5, 5.0]
-    mild Contrast ∈ [0.60, 0.78], strong Contrast ∈ [0.38, 0.62] → overlap [0.60, 0.62]
+    mild Radius   ∈ [0.5, 2.0],  strong Radius   ∈ [1.5, 5.0]  → overlap [1.5, 2.0]
+    mild Contrast ∈ [0.62, 0.80], strong Contrast ∈ [0.40, 0.65] → overlap [0.62, 0.65]
     This prevents the classifier from trivially splitting on spot amplitude.
     """
 
     if activity_class == "mild":
-        radius    = round(_uniform(rng, 1.0, 3.0), 2)     # was 1.5-5.0
-        contrast  = round(_uniform(rng, 0.70, 0.85), 3)   # lighter spots, was 0.60-0.78
+        radius    = round(_uniform(rng, 0.5, 2.0), 2)
+        contrast  = round(_uniform(rng, 0.62, 0.80), 3)
         # lifetime as a FRACTION of P_rot, then convert below
-        life_in_prot = _uniform(rng, 0.3, 1.0)            # decays within ~1 rotation
-        domega    = round(_uniform(rng, 0.15, 0.30), 3)   # more diff. rotation → smearing
-        lat_range = 25.0
+        life_in_prot = _uniform(rng, 0.5, 1.5)
+        domega    = round(_uniform(rng, 0.15, 0.25), 3)
+        lat_range = 20.0
     else:  # strong
-        radius    = round(_uniform(rng, 5.0, 10.0), 2)    # was 4.0-10.0
-        contrast  = round(_uniform(rng, 0.35, 0.55), 3)   # darker spots
-        life_in_prot = _uniform(rng, 2.0, 6.0)            # persists many rotations
-        domega    = round(_uniform(rng, 0.00, 0.08), 3)   # near solid-body
-        lat_range = 40.0
+        radius    = round(_uniform(rng, 1.5, 5.0), 2)
+        contrast  = round(_uniform(rng, 0.40, 0.65), 3)
+        life_in_prot = _uniform(rng, 1.5, 5.0)
+        domega    = round(_uniform(rng, 0.02, 0.12), 3)
+        lat_range = 35.0
 
     # convert lifetime to days using THIS star's rotation period so the
     # coherence (lifetime/P_rot) ordering is preserved regardless of P_rot draw
@@ -210,6 +211,16 @@ def sample_spot_params(activity_class: str, rng: np.random.Generator, current_pr
     }
 
 
+def sample_spot_count(activity_class:str, rng: np.random.Generator) -> int:
+    """
+    Sample the number of spot groups. 
+    """
+    if activity_class == "mild":
+        return int(_uniform(rng, 1, 4))
+    else:  # strong
+        return int(_uniform(rng, 3, 7))
+  
+
 FLARE_AMPLITUDE_ALPHA = 2.0   # power-law index for flare amplitude (Davenport 2016)
 
 
@@ -218,13 +229,13 @@ def sample_flare_params(activity_class: str, rng: np.random.Generator) -> dict:
     Flare parameters.  Grounded in Davenport 2016 (Kepler flare statistics).
 
     MeanPeriod : mean inter-flare interval in days.
-      - mild:  ~3–10 days between flares (low-activity solar-like)
-      - strong: ~0.3–2 days (active star; consistent with P_rot < 18 d)
+      - mild:  20–80 days (solar white-light flares are extremely rare)
+      - strong: 1–6 days (active star; consistent with P_rot < 22 d)
 
     Amplitude (ppm): power-law distributed p(A) ∝ A^{-α}, α=2.0 — flare
       amplitudes follow a power law (Davenport 2016, Lacy+1976).
-      - mild:   200–800 ppm   (detectable but sub-dominant)
-      - strong: 800–5000 ppm  (can mimic or swamp short transits)
+      - mild:   15–100 ppm   (solar WL flares; barely detectable)
+      - strong: 100–1500 ppm (can mimic or swamp short transits)
 
     UpDown: rise-to-fall time ratio.  Kepler flare morphology: 0.05–0.20.
     MeanDuration: set to -1 so PSLS uses MeanPeriod/5 (its default).
@@ -232,11 +243,11 @@ def sample_flare_params(activity_class: str, rng: np.random.Generator) -> dict:
     """
 
     if activity_class == "mild":
-        mean_period = round(_loguniform(rng, 4.0, 15.0), 2)
-        amplitude   = round(_powerlaw(rng, 150.0, 800.0, FLARE_AMPLITUDE_ALPHA), 1)
+        mean_period = round(_loguniform(rng, 20.0, 80.0), 2)
+        amplitude   = round(_powerlaw(rng, 15.0, 100.0, FLARE_AMPLITUDE_ALPHA), 1)
     else:  # strong
-        mean_period = round(_loguniform(rng, 0.5, 4.0), 3)
-        amplitude   = round(_powerlaw(rng, 500.0, 5000.0, FLARE_AMPLITUDE_ALPHA), 1)
+        mean_period = round(_loguniform(rng, 1.0, 6.0), 3)
+        amplitude   = round(_powerlaw(rng, 100.0, 1500.0, FLARE_AMPLITUDE_ALPHA), 1)
 
     updown = round(_uniform(rng, 0.05, 0.20), 3)
 
@@ -323,7 +334,7 @@ BASE_CONFIG = {
         "QuarterDuration": QUARTER_DURATION,
         "MasterSeed": None,          # filled per LC
         "Gaps": {
-            "Enable": 0,
+            "Enable": 1,
             "Seed": -1,
             "InterQuarterGapDuration": 3.0,
             "RandomGapDuration": 0.0,
@@ -454,16 +465,16 @@ def build_config(job: dict) -> dict:
     cfg["Activity"]["Tau"]   = job["tau"]
 
     # --- Activity: spots -----------------------------------------------
-    sp = job["spot"]
-    if sp is not None:
+    spots = job["spots"]
+    if spots:
         cfg["Activity"]["Spot"]["Enable"]    = 1
-        cfg["Activity"]["Spot"]["Radius"]    = [sp["radius"]]
-        cfg["Activity"]["Spot"]["Contrast"]  = [sp["contrast"]]
-        cfg["Activity"]["Spot"]["Lifetime"]  = [sp["lifetime"]]
-        cfg["Activity"]["Spot"]["Latitude"]  = [sp["latitude"]]
-        cfg["Activity"]["Spot"]["Longitude"] = [sp["longitude"]]
-        cfg["Activity"]["Spot"]["TimeMax"]   = [-1]    # PSLS randomises this
-        cfg["Activity"]["Spot"]["dOmega"]    = sp["domega"]
+        cfg["Activity"]["Spot"]["Radius"]    = [s["radius"]    for s in spots]
+        cfg["Activity"]["Spot"]["Contrast"]  = [s["contrast"]  for s in spots]
+        cfg["Activity"]["Spot"]["Lifetime"]  = [s["lifetime"]  for s in spots]
+        cfg["Activity"]["Spot"]["Latitude"]  = [s["latitude"]  for s in spots]
+        cfg["Activity"]["Spot"]["Longitude"] = [s["longitude"] for s in spots]
+        cfg["Activity"]["Spot"]["TimeMax"]   = [-1] * len(spots)
+        cfg["Activity"]["Spot"]["dOmega"]    = round(float(np.mean([s["domega"] for s in spots])), 3)
     else:
         cfg["Activity"]["Spot"]["Enable"] = 0
 
@@ -523,7 +534,9 @@ def build_job_list(n_per_class: int, rng_seed: int = 42) -> list[dict]:
         prot        = sample_rotation_period(activity_class, rng)
         sigma       = sample_activity_sigma(activity_class, rng)
         tau         = sample_activity_tau(activity_class, rng)
-        spot        = sample_spot_params(activity_class, rng, current_prot=prot)
+        n_spots     = sample_spot_count(activity_class, rng)
+        spots       = [sample_spot_params(activity_class, rng, current_prot=prot)
+                       for _ in range(n_spots)]
         flare       = sample_flare_params(activity_class, rng)
         inclination = sample_inclination(rng)
 
@@ -537,7 +550,7 @@ def build_job_list(n_per_class: int, rng_seed: int = 42) -> list[dict]:
             rotation_period = prot,
             sigma           = sigma,
             tau             = tau,
-            spot            = spot,
+            spots           = spots,
             flare           = flare,
             inclination     = inclination,
             planet          = planet_cfg,
@@ -661,9 +674,9 @@ def run_pipeline(args):
         # ---------------------------------------------------------------
         # Build metadata row  (all sampled parameters logged)
         # ---------------------------------------------------------------
-        pl = job["planet"]
-        sp = job["spot"]
-        fl = job["flare"]
+        pl    = job["planet"]
+        spots = job["spots"]
+        fl    = job["flare"]
 
         records.append(dict(
             file_id              = lc_id,
@@ -677,14 +690,15 @@ def run_pipeline(args):
             # stochastic activity
             sigma_ppm            = job["sigma"],
             tau_days             = job["tau"],
-            # spots
-            spot_enable          = int(sp is not None),
-            spot_radius_deg      = sp["radius"]    if sp else None,
-            spot_contrast        = sp["contrast"]  if sp else None,
-            spot_lifetime_days   = sp["lifetime"]  if sp else None,
-            spot_latitude_deg    = sp["latitude"]  if sp else None,
-            spot_longitude_deg   = sp["longitude"] if sp else None,
-            spot_domega          = sp["domega"]    if sp else None,
+            # spots (aggregate across all spot groups)
+            spot_enable          = int(len(spots) > 0),
+            spot_count           = len(spots),
+            spot_radius_deg      = round(float(np.mean([s["radius"]    for s in spots])), 3) if spots else None,
+            spot_contrast        = round(float(np.mean([s["contrast"]  for s in spots])), 3) if spots else None,
+            spot_lifetime_days   = round(float(np.mean([s["lifetime"]  for s in spots])), 1) if spots else None,
+            spot_latitude_deg    = round(float(np.mean([s["latitude"]  for s in spots])), 2) if spots else None,
+            spot_longitude_deg   = round(float(np.mean([s["longitude"] for s in spots])), 2) if spots else None,
+            spot_domega          = round(float(np.mean([s["domega"]    for s in spots])), 3) if spots else None,
             # flares
             flare_enable         = fl["enable"],
             flare_mean_period_days = fl["mean_period"] if fl["enable"] else None,
