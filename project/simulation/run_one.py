@@ -1,10 +1,10 @@
 """
-Run PSLS for a single star ID and save just its .dat file.
+Run PSLS for a single star ID and save just its .npz file.
 
 Reuses the directory layout and PSLS-invocation conventions of
 generate_dataset.py:
-    <out_dir>/configs/<id:010d>.yaml   ← input config (already generated)
-    <out_dir>/lightcurves/<id:010d>.dat ← output written here
+    <out_dir>/configs/<id:010d>.yaml    ← input config (already generated)
+    <out_dir>/lightcurves/<id:010d>.npz ← output written here (compressed)
 
 Usage
 -----
@@ -13,11 +13,11 @@ Usage
 """
 
 import argparse
-import shutil
 import subprocess
 import tempfile
 from pathlib import Path
 
+import numpy as np
 import yaml
 
 
@@ -99,10 +99,11 @@ def main():
         if dat_path is None:
             print(f"✗ PSLS failed for star {lc_id}")
             return
-        dest = lc_dir / f"{lc_id}.dat"
-        shutil.copy2(dat_path, dest)
+        dest = lc_dir / f"{lc_id}.npz"
+        raw = np.loadtxt(dat_path)
+        np.savez_compressed(dest, time=raw[:, 0], flux=raw[:, 1], flag=raw[:, 2].astype(np.int8))
 
-    print(f"✓ {lc_id}.dat → {dest}")
+    print(f"✓ {lc_id}.npz → {dest}")
 
 
 if __name__ == "__main__":

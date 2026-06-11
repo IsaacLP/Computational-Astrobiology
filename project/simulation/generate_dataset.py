@@ -14,13 +14,12 @@ Usage
   python generate_dataset.py --out_dir /data/plato_lcs
 
 The script writes:
-  <out_dir>/lightcurves/   ← one .dat per LC  (raw PSLS output)
+  <out_dir>/lightcurves/   ← one .npz per LC  (compressed: arrays time, flux, flag)
   <out_dir>/metadata.csv   ← one row per LC with all labels & parameters
   <out_dir>/configs/       ← the PSLS YAML used for each LC (reproducibility)
 """
 
 import argparse
-import shutil
 import subprocess
 import tempfile
 from pathlib import Path
@@ -709,7 +708,13 @@ def run_pipeline(args):
                 failed += 1
                 continue
 
-            shutil.copy2(dat_path, lc_dir / f"{lc_id}.dat")
+            raw = np.loadtxt(dat_path)
+            np.savez_compressed(
+                lc_dir / f"{lc_id}.npz",
+                time=raw[:, 0],
+                flux=raw[:, 1],
+                flag=raw[:, 2].astype(np.int8),
+            )
 
         # Save config YAML for reproducibility
         cfg_file = cfg_dir / f"{lc_id}.yaml"
