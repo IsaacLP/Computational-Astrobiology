@@ -25,10 +25,15 @@ import subprocess
 import tempfile
 from pathlib import Path
 
+import h5py
 import numpy as np
 import pandas as pd
 import yaml
 from tqdm import tqdm
+
+# Solar constants matching sls.py
+_MSUN = 1.98919e33  # g
+_RSUN = 6.9599e10   # cm
 
 
 # ---------------------------------------------------------------------------
@@ -88,6 +93,45 @@ def _inclination_from_cosi(rng: np.random.Generator,
     cos_hi = np.cos(np.radians(i_min_deg))
     cos_i  = rng.uniform(cos_lo, cos_hi)
     return float(np.degrees(np.arccos(cos_i)))
+
+
+# ---------------------------------------------------------------------------
+# Stellar grid lookup  (load once, query per LC)
+# ---------------------------------------------------------------------------
+
+def load_stellar_grid(psls_dir: Path) -> tuple:
+    """Load CESAM2K HDF5 grid; return arrays shaped (n_tracks, max_steps)."""
+    grid_path = psls_dir / "models" / "grid_v0.1_ov0-plato.hdf5"
+    with h5py.File(grid_path, "r") as pack:
+        nt = len(pack.keys())
+        nm = 100_000
+        teffG   = -100. * np.ones((nt, nm))
+        loggG   = -100. * np.ones((nt, nm))
+        massG   = -100. * np.ones((nt, nm))
+        radiusG = -100. * np.ones((nt, nm))
+        Xc      = -100. * np.ones((nt, nm))
+        i = 0
+        for key in pack.keys():
+            if key != "license":
+                g  = pack[key]["global"]
+                ns = len(g["teff"])
+                teffG[i,   :ns] = np.array(g["teff"])
+                loggG[i,   :ns] = np.array(g["logg"])
+                massG[i,   :ns] = np.array(g["mass"])
+                radiusG[i, :ns] = np.array(g["radius"])
+                Xc[i,      :ns] = np.array(g["Xc"])
+            i += 1
+    ms_mask = Xc > 1e-3   # main-sequence filter (Xc = central hydrogen fraction)
+    return teffG, loggG, massG, radiusG, ms_mask
+
+
+def lookup_stellar_params(teffG, loggG, massG, radiusG, ms_mask,
+                           teff: float, logg: float) -> tuple[float, float]:
+    """Return (mass_msun, radius_rsun) of the nearest MS grid point via Chi2."""
+    chi2 = ((teffG - teff) / 15.) ** 2 + ((loggG - logg) / 0.01) ** 2
+    chi2[~ms_mask] = 1e99
+    j, k = divmod(int(np.argmin(chi2)), teffG.shape[1])
+    return float(massG[j, k] / _MSUN), float(radiusG[j, k] / _RSUN)
 
 
 # ---------------------------------------------------------------------------
@@ -271,7 +315,7 @@ def sample_inclination(rng: np.random.Generator) -> float:
     return round(_inclination_from_cosi(rng, i_min_deg=5.0, i_max_deg=90.0), 2)
 
 
-def sample_planet_params(rng: np.random.Generator) -> dict:
+def sample_planet_params(rng: np.random.Generator, star_mass_msun: float) -> dict:
     """
     Planet orbital and size parameters.  Both are log-uniform — empirical
     occurrence rates are roughly flat in log-period and log-radius.
@@ -286,17 +330,16 @@ def sample_planet_params(rng: np.random.Generator) -> dict:
       - 4 R_Earth → ~1260 ppm depth (well detectable even in active stars)
       - This spans the scientifically interesting detection boundary.
 
-    SemiMajorAxis: derived exactly from Kepler's 3rd law for a 1 M_sun host.
-      a [AU] = (P [yr])^(2/3)
-      We compute it here to ensure physical self-consistency and write it
-      directly into the YAML — PSLS uses this value for transit geometry.
+    SemiMajorAxis: derived from Kepler's 3rd law using the grid stellar mass.
+      a [AU] = (M [Msun] * P [yr]^2)^(1/3)
+      Written directly into the YAML — PSLS uses this value for transit geometry.
 
     OrbitalAngle: uniform in [0°, 360°] — randomises orbital phase so
       transit mid-points are uncorrelated across the dataset.
     """
     period_days   = round(_loguniform(rng, 3.0, 50.0), 4)
     radius_rjup   = round(_loguniform(rng, 0.089, 0.356), 5)
-    sma_au        = round(kepler_sma(period_days), 5)
+    sma_au        = round(kepler_sma(period_days, star_mass_msun), 5)
     orbital_angle = round(_uniform(rng, 0.0, 360.0), 2)
 
     return {
@@ -311,13 +354,12 @@ def sample_planet_params(rng: np.random.Generator) -> dict:
 # Derived physical quantities
 # ---------------------------------------------------------------------------
 
-def kepler_sma(period_days: float, mass_solar: float = 1.0) -> float:
+def kepler_sma(period_days: float, mass_solar: float) -> float:
     """Semi-major axis in AU from Kepler's 3rd law: a = (M * P^2)^(1/3)."""
     return (mass_solar * (period_days / 365.25) ** 2) ** (1.0 / 3.0)
 
 
-def transit_depth_ppm(planet_radius_rjup: float,
-                      star_radius_rsun: float = 1.0) -> float:
+def transit_depth_ppm(planet_radius_rjup: float, star_radius_rsun: float) -> float:
     """Transit depth in ppm.  1 R_Jup = 0.10045 R_Sun."""
     rp_rsun = planet_radius_rjup * 0.10045
     return (rp_rsun / star_radius_rsun) ** 2 * 1e6
@@ -520,58 +562,63 @@ def build_job_list(n_per_class: int, rng_seed: int = 42) -> list[dict]:
       spot Radius, and spot Contrast so the classifier must attend to transit
       morphology rather than activity level.
     """
+    project_root = Path(__file__).resolve().parent.parent
+    grid_data = load_stellar_grid(project_root / "psls")
+
     rng   = np.random.default_rng(rng_seed)
     jobs  = []
     star_id = STAR_ID_BASE
 
-    def _add(label: int, activity_class: str, planet_cfg: dict | None):
+    def _add(label: int, activity_class: str, has_planet: bool):
         nonlocal star_id
         seed = int(rng.integers(0, 2**31))
 
-        teff, logg  = sample_stellar_params(rng)
-        prot        = sample_rotation_period(activity_class, rng)
-        sigma       = sample_activity_sigma(activity_class, rng)
-        tau         = sample_activity_tau(activity_class, rng)
-        n_spots     = sample_spot_count(activity_class, rng)
-        spots       = [sample_spot_params(activity_class, rng, current_prot=prot)
-                       for _ in range(n_spots)]
-        flare       = sample_flare_params(activity_class, rng)
-        inclination = sample_inclination(rng)
+        teff, logg        = sample_stellar_params(rng)
+        star_mass, star_r = lookup_stellar_params(*grid_data, teff, logg)
+        prot              = sample_rotation_period(activity_class, rng)
+        sigma             = sample_activity_sigma(activity_class, rng)
+        tau               = sample_activity_tau(activity_class, rng)
+        n_spots           = sample_spot_count(activity_class, rng)
+        spots             = [sample_spot_params(activity_class, rng, current_prot=prot)
+                             for _ in range(n_spots)]
+        flare             = sample_flare_params(activity_class, rng)
+        inclination       = sample_inclination(rng)
+        planet_cfg        = sample_planet_params(rng, star_mass) if has_planet else None
 
         jobs.append(dict(
-            star_id         = star_id,
-            seed            = seed,
-            label           = label,
-            activity_class  = activity_class,
-            teff            = teff,
-            logg            = logg,
-            rotation_period = prot,
-            sigma           = sigma,
-            tau             = tau,
-            spots           = spots,
-            flare           = flare,
-            inclination     = inclination,
-            planet          = planet_cfg,
+            star_id          = star_id,
+            seed             = seed,
+            label            = label,
+            activity_class   = activity_class,
+            teff             = teff,
+            logg             = logg,
+            star_mass_msun   = star_mass,
+            star_radius_rsun = star_r,
+            rotation_period  = prot,
+            sigma            = sigma,
+            tau              = tau,
+            spots            = spots,
+            flare            = flare,
+            inclination      = inclination,
+            planet           = planet_cfg,
         ))
         star_id += 1
 
     # ---- Class 0: mild activity, no planet --------------------------------
     for _ in range(n_per_class):
-        _add(label=0, activity_class="mild", planet_cfg=None)
+        _add(label=0, activity_class="mild", has_planet=False)
 
     # ---- Class 1: strong activity, no planet ---------------------------
     for _ in range(n_per_class):
-        _add(label=1, activity_class="strong", planet_cfg=None)
+        _add(label=1, activity_class="strong", has_planet=False)
 
     # ---- Class 2: planet + mild activity --------------------------------
     for _ in range(n_per_class):
-        planet = sample_planet_params(rng)
-        _add(label=2, activity_class="mild", planet_cfg=planet)
+        _add(label=2, activity_class="mild", has_planet=True)
 
     # ---- Class 3: planet + strong activity ------------------------------
     for _ in range(n_per_class):
-        planet = sample_planet_params(rng)
-        _add(label=3, activity_class="strong", planet_cfg=planet)
+        _add(label=3, activity_class="strong", has_planet=True)
 
     rng.shuffle(jobs)
     return jobs
@@ -683,6 +730,8 @@ def run_pipeline(args):
             # stellar
             teff                 = job["teff"],
             logg                 = job["logg"],
+            star_mass_msun       = job["star_mass_msun"],
+            star_radius_rsun     = job["star_radius_rsun"],
             rotation_period_days = job["rotation_period"],
             inclination_deg      = job["inclination"],
             # stochastic activity
@@ -707,7 +756,7 @@ def run_pipeline(args):
             planet_radius_rjup   = pl["radius_rjup"]  if pl else None,
             planet_radius_earth  = pl["radius_rjup"] * 11.0 if pl else None,
             planet_sma_au        = pl["sma_au"]        if pl else None,
-            transit_depth_ppm    = transit_depth_ppm(pl["radius_rjup"]) if pl else None,
+            transit_depth_ppm    = transit_depth_ppm(pl["radius_rjup"], job["star_radius_rsun"]) if pl else None,
             # LC metadata
             seed                 = job["seed"],
         ))
