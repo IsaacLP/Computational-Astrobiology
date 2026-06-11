@@ -21,8 +21,7 @@ The core question: *Can ML reliably detect transiting planets when the host star
 
 ## Pipeline
 
-1. **Simulate** — PSLS generates PLATO-like light curves with spots, rotation, flares, granulation, and instrumental noise
-2. **Inject** — Planet transits are injected across a structured parameter grid (periods 2–50 d, radii 0.8–4 R⊕)
-3. **Baseline** — TLS transit search with optional Wotan detrending establishes a classical benchmark
+1. **Simulate** — PSLS generates PLATO-like light curves with spots, rotation, flares, granulation, and instrumental noise. Planet transits are injected withn the PSLS simulation across a structured parameter grid (periods 2–50 d, radii 0.8–4 R⊕)
+3. **Baseline** — BLS transit search with Wotan detrending establishes a classical benchmark
 4. **ML** — Models trained on engineered tabular features and/or raw 1D sequences
 5. **Evaluate** — Recovery fraction as a function of activity level, planet radius, and transit depth
