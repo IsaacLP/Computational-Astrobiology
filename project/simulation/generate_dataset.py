@@ -105,9 +105,7 @@ def sample_stellar_params(rng: np.random.Generator) -> tuple[float, float]:
 
 def sample_rotation_period(activity_class: str, rng: np.random.Generator) -> float:
     """
-    Surface rotation period (days).  Drives spot modulation timescale and
-    the rotational splitting of p-mode multiplets (seismic only — negligible
-    for broadband photometry).  Key: P_rot controls the period of quasi-
+    Surface rotation period (days). Key: P_rot controls the period of quasi-
     sinusoidal spot modulation, which aliases with P_transit.
 
     Ranges grounded in McQuillan et al. 2014 (Kepler rotation survey):
@@ -131,7 +129,7 @@ def sample_activity_sigma(activity_class: str, rng: np.random.Generator) -> floa
 
     Ranges chosen so mild and strong distributions overlap on [25, 40] ppm —
     the classifier cannot threshold on activity amplitude alone.
-    Solar stochastic photometric variability is ~10–30 ppm.
+    Solar stochastic photometric variability is ~10-30 ppm.
     """
     if activity_class == "mild":
         return round(_loguniform(rng, 5.0, 40.0), 2)
@@ -158,16 +156,16 @@ def sample_spot_params(activity_class: str, rng: np.random.Generator, current_pr
 
     Parameter notes
     ---------------
-    Radius   : angular diameter of spot in degrees.  Flux deficit ∝ sin²(α).
-               Solar spots are ~0.5–2°; moderately active stars reach 2–5°.
-    Contrast : fs = spot flux / stellar flux.  Solar area-averaged value ≈ 0.62–0.75.
-               Mild (solar-like): fs ≈ 0.62–0.80.
-               Strong: fs ≈ 0.40–0.65.
+    Radius   : angular diameter of spot in degrees.  Flux deficit ~ sin^2(alpha).
+               Solar spots are ~0.5-2°; moderately active stars reach 2-5°.
+    Contrast : fs = spot flux / stellar flux.  Solar area-averaged value ~ 0.62-0.75.
+               Mild (solar-like): fs ≈ 0.62-0.80.
+               Strong: fs ≈ 0.40-0.65.
     Lifetime : spot survival time in days (spotintime converts to units of
-               P_rot internally: taui[i] / prot).  Solar spots last days–weeks.
+               P_rot internally: taui[i] / prot).  Solar spots last days-weeks.
     Latitude : signed latitude in degrees.  Solar active belt: ±20°.
     Longitude: initial longitude in [0°, 360°].  Randomised per instance so
-               different LCs have different spot–transit phase relationships.
+               different LCs have different spot-transit phase relationships.
     TimeMax  : time of maximum contrast.  Set to -1 so PSLS draws it
                randomly — this is the correct choice for independent realisations.
     dOmega   : differential rotation Δ Ω / Ω.  Solar value ≈ 0.20.
@@ -175,24 +173,24 @@ def sample_spot_params(activity_class: str, rng: np.random.Generator, current_pr
 
     Overlap constraint
     ------------------
-    mild Radius   ∈ [0.5, 2.0],  strong Radius   ∈ [1.5, 5.0]  → overlap [1.5, 2.0]
+    mild Radius   ∈ [0.5, 2.0],  strong Radius   ∈ [1.5, 3.0]  → overlap [1.5, 2.0]
     mild Contrast ∈ [0.62, 0.80], strong Contrast ∈ [0.40, 0.65] → overlap [0.62, 0.65]
     This prevents the classifier from trivially splitting on spot amplitude.
     """
 
     if activity_class == "mild":
-        radius    = round(_uniform(rng, 0.5, 2.0), 2)
-        contrast  = round(_uniform(rng, 0.62, 0.80), 3)
+        radius       = round(_uniform(rng, 0.5, 2.0), 2)
+        contrast     = round(_uniform(rng, 0.62, 0.80), 3)
         # lifetime as a FRACTION of P_rot, then convert below
-        life_in_prot = _uniform(rng, 0.5, 1.5)
-        domega    = round(_uniform(rng, 0.15, 0.25), 3)
-        lat_range = 20.0
+        life_in_prot = _uniform(rng, 0.2, 0.8)
+        domega       = round(_uniform(rng, 0.12, 0.25), 3)
+        lat_range    = 20.0
     else:  # strong
-        radius    = round(_uniform(rng, 1.5, 5.0), 2)
-        contrast  = round(_uniform(rng, 0.40, 0.65), 3)
-        life_in_prot = _uniform(rng, 1.5, 5.0)
-        domega    = round(_uniform(rng, 0.02, 0.12), 3)
-        lat_range = 35.0
+        radius       = round(_uniform(rng, 1.5, 3.0), 2)
+        contrast     = round(_uniform(rng, 0.40, 0.65), 3)
+        life_in_prot = _uniform(rng, 0.5, 1.5)
+        domega       = round(_uniform(rng, 0.05, 0.15), 3)
+        lat_range    = 35.0
 
     # convert lifetime to days using THIS star's rotation period so the
     # coherence (lifetime/P_rot) ordering is preserved regardless of P_rot draw
@@ -216,9 +214,9 @@ def sample_spot_count(activity_class:str, rng: np.random.Generator) -> int:
     Sample the number of spot groups. 
     """
     if activity_class == "mild":
-        return int(_uniform(rng, 1, 4))
+        return int(_uniform(rng, 1, 4))   # 1–3 spots
     else:  # strong
-        return int(_uniform(rng, 3, 7))
+        return int(_uniform(rng, 2, 6))   # 2–5 spots
   
 
 FLARE_AMPLITUDE_ALPHA = 2.0   # power-law index for flare amplitude (Davenport 2016)
@@ -229,15 +227,15 @@ def sample_flare_params(activity_class: str, rng: np.random.Generator) -> dict:
     Flare parameters.  Grounded in Davenport 2016 (Kepler flare statistics).
 
     MeanPeriod : mean inter-flare interval in days.
-      - mild:  20–80 days (solar white-light flares are extremely rare)
-      - strong: 1–6 days (active star; consistent with P_rot < 22 d)
+      - mild:  20-80 days (solar white-light flares are extremely rare)
+      - strong: 1-6 days (active star; consistent with P_rot < 22 d)
 
-    Amplitude (ppm): power-law distributed p(A) ∝ A^{-α}, α=2.0 — flare
+    Amplitude (ppm): power-law distributed p(A) ~ A^{-alpha}, alpha=2.0 — flare
       amplitudes follow a power law (Davenport 2016, Lacy+1976).
-      - mild:   15–100 ppm   (solar WL flares; barely detectable)
-      - strong: 100–1500 ppm (can mimic or swamp short transits)
+      - mild:   15-100 ppm   (solar WL flares; barely detectable)
+      - strong: 100-1500 ppm (can mimic or swamp short transits)
 
-    UpDown: rise-to-fall time ratio.  Kepler flare morphology: 0.05–0.20.
+    UpDown: rise-to-fall time ratio.  Kepler flare morphology: 0.05-0.20.
     MeanDuration: set to -1 so PSLS uses MeanPeriod/5 (its default).
     DurationDispersion: set to -1 so PSLS uses its default scaling.
     """
@@ -334,7 +332,7 @@ BASE_CONFIG = {
         "QuarterDuration": QUARTER_DURATION,
         "MasterSeed": None,          # filled per LC
         "Gaps": {
-            "Enable": 1,
+            "Enable": 0,
             "Seed": -1,
             "InterQuarterGapDuration": 3.0,
             "RandomGapDuration": 0.0,
@@ -355,7 +353,7 @@ BASE_CONFIG = {
         "RandomNoise": {
             "Enable": 1,
             "Type": "PLATO_SIMU",
-            "NSR": 73.0,
+            "NSR": -1,
         },
         "Systematics": {
             "Enable": 1,
