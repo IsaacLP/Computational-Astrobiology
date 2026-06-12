@@ -761,6 +761,7 @@ def run_pipeline(args):
             planet_radius_rjup   = pl["radius_rjup"]  if pl else None,
             planet_radius_earth  = pl["radius_rjup"] * 11.0 if pl else None,
             planet_sma_au        = pl["sma_au"]        if pl else None,
+            orbital_angle_deg    = pl["orbital_angle"] if pl else None,
             transit_depth_ppm    = transit_depth_ppm(pl["radius_rjup"], job["star_radius_rsun"]) if pl else None,
             # LC metadata
             seed                 = job["seed"],
