@@ -1,0 +1,129 @@
+Activity:
+  Enable: 1
+  Flare:
+    Amplitude: 116.2
+    DurationDispersion: -1
+    Enable: 1
+    MeanDuration: -1
+    MeanPeriod: 1.444
+    Seed: -1
+    UpDown: 0.055
+  Seed: -1
+  Sigma: 119.49
+  Spot:
+    Contrast:
+    - 0.524
+    - 0.516
+    - 0.541
+    - 0.592
+    - 0.581
+    Enable: 1
+    Latitude:
+    - 23.83
+    - 10.76
+    - -30.4
+    - 21.98
+    - 8.92
+    Lifetime:
+    - 10.6
+    - 8.3
+    - 9.8
+    - 16.3
+    - 17.3
+    Longitude:
+    - 212.01
+    - 240.92
+    - 53.28
+    - 215.07
+    - 93.9
+    Modulation: 0.0
+    MuSpot: 0.78
+    MuStar: 0.59
+    Radius:
+    - 2.61
+    - 2.55
+    - 2.5
+    - 2.44
+    - 1.95
+    Seed: -1
+    TimeMax:
+    - -1
+    - -1
+    - -1
+    - -1
+    - -1
+    dOmega: 0.082
+  Tau: 3.885
+External:
+  Enable: 0
+  FilePath: examples/external_example.txt
+Granulation:
+  Enable: 1
+  Seed: -1
+  Type: 1
+Instrument:
+  GroupID:
+  - 1
+  - 2
+  - 3
+  - 4
+  IntegrationTime: 21
+  NCamera: 6
+  RandomNoise:
+    Enable: 1
+    NSR: -1
+    Type: PLATO_SIMU
+  Sampling: 25
+  Systematics:
+    DriftLevel: min
+    Enable: 1
+    Seed: -1
+    Table: systematics/PLATO_systematics_BOL_V2.npy
+    Version: 2
+  TimeShift: 6.25
+Observation:
+  Gaps:
+    Enable: 0
+    InterQuarterGapDuration: 3.0
+    PeriodicGapCadence: 5.0
+    PeriodicGapDuration: 20.0
+    PeriodicGapJitter: 2.0
+    PeriodicGapStep: 0.0
+    RandomGapDuration: 0.0
+    RandomGapStep: 0.0
+    RandomGapTimeFraction: 0.5
+    Seed: -1
+  MasterSeed: 1706209573
+  QuarterDuration:
+  - 90.0
+  - 90.0
+  - 90.0
+Oscillations:
+  DPI: -1
+  Enable: 1
+  Seed: -1
+  SurfaceEffects: 0
+  delta_nu: -1.0
+  numax: -1.0
+  q: 0.0
+Star:
+  CoreRotationFreq: 0.0
+  ES: ms
+  ID: 1173
+  Inclination: 43.86
+  Logg: 4.542
+  Mag: 10.0
+  ModelDir: models
+  ModelName: grid_v0.1_ov0-plato.hdf5
+  ModelType: grid
+  SurfaceRotationPeriod: 11.61
+  Teff: 5692.5
+Transit:
+  Enable: 1
+  LimbDarkeningCoefficients:
+  - 0.25
+  - 0.75
+  OrbitalAngle: 313.06
+  OrbitalPeriod: 4.5234
+  PlanetRadius: 0.22727
+  PlanetSemiMajorAxis: 0.05264

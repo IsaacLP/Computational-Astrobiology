@@ -1,0 +1,123 @@
+Activity:
+  Enable: 1
+  Flare:
+    Amplitude: 274.6
+    DurationDispersion: -1
+    Enable: 1
+    MeanDuration: -1
+    MeanPeriod: 2.365
+    Seed: -1
+    UpDown: 0.133
+  Seed: -1
+  Sigma: 38.26
+  Spot:
+    Contrast:
+    - 0.436
+    - 0.611
+    - 0.63
+    - 0.55
+    Enable: 1
+    Latitude:
+    - 2.72
+    - -4.5
+    - 6.87
+    - 20.61
+    Lifetime:
+    - 5.7
+    - 9.9
+    - 9.4
+    - 8.0
+    Longitude:
+    - 252.83
+    - 254.82
+    - 359.53
+    - 238.26
+    Modulation: 0.0
+    MuSpot: 0.78
+    MuStar: 0.59
+    Radius:
+    - 1.9
+    - 2.56
+    - 2.33
+    - 1.62
+    Seed: -1
+    TimeMax:
+    - -1
+    - -1
+    - -1
+    - -1
+    dOmega: 0.127
+  Tau: 4.158
+External:
+  Enable: 0
+  FilePath: examples/external_example.txt
+Granulation:
+  Enable: 1
+  Seed: -1
+  Type: 1
+Instrument:
+  GroupID:
+  - 1
+  - 2
+  - 3
+  - 4
+  IntegrationTime: 21
+  NCamera: 6
+  RandomNoise:
+    Enable: 1
+    NSR: -1
+    Type: PLATO_SIMU
+  Sampling: 25
+  Systematics:
+    DriftLevel: min
+    Enable: 1
+    Seed: -1
+    Table: systematics/PLATO_systematics_BOL_V2.npy
+    Version: 2
+  TimeShift: 6.25
+Observation:
+  Gaps:
+    Enable: 0
+    InterQuarterGapDuration: 3.0
+    PeriodicGapCadence: 5.0
+    PeriodicGapDuration: 20.0
+    PeriodicGapJitter: 2.0
+    PeriodicGapStep: 0.0
+    RandomGapDuration: 0.0
+    RandomGapStep: 0.0
+    RandomGapTimeFraction: 0.5
+    Seed: -1
+  MasterSeed: 57590280
+  QuarterDuration:
+  - 90.0
+  - 90.0
+  - 90.0
+Oscillations:
+  DPI: -1
+  Enable: 1
+  Seed: -1
+  SurfaceEffects: 0
+  delta_nu: -1.0
+  numax: -1.0
+  q: 0.0
+Star:
+  CoreRotationFreq: 0.0
+  ES: ms
+  ID: 1439
+  Inclination: 73.37
+  Logg: 4.269
+  Mag: 10.0
+  ModelDir: models
+  ModelName: grid_v0.1_ov0-plato.hdf5
+  ModelType: grid
+  SurfaceRotationPeriod: 10.86
+  Teff: 6148.7
+Transit:
+  Enable: 1
+  LimbDarkeningCoefficients:
+  - 0.25
+  - 0.75
+  OrbitalAngle: 92.56
+  OrbitalPeriod: 30.0837
+  PlanetRadius: 0.18113
+  PlanetSemiMajorAxis: 0.19597

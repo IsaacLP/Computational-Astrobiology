@@ -1,0 +1,111 @@
+Activity:
+  Enable: 1
+  Flare:
+    Amplitude: 25.4
+    DurationDispersion: -1
+    Enable: 1
+    MeanDuration: -1
+    MeanPeriod: 53.03
+    Seed: -1
+    UpDown: 0.093
+  Seed: -1
+  Sigma: 10.71
+  Spot:
+    Contrast:
+    - 0.719
+    - 0.68
+    Enable: 1
+    Latitude:
+    - -2.44
+    - -9.06
+    Lifetime:
+    - 15.5
+    - 16.8
+    Longitude:
+    - 5.78
+    - 241.48
+    Modulation: 0.0
+    MuSpot: 0.78
+    MuStar: 0.59
+    Radius:
+    - 1.61
+    - 0.68
+    Seed: -1
+    TimeMax:
+    - -1
+    - -1
+    dOmega: 0.152
+  Tau: 1.684
+External:
+  Enable: 0
+  FilePath: examples/external_example.txt
+Granulation:
+  Enable: 1
+  Seed: -1
+  Type: 1
+Instrument:
+  GroupID:
+  - 1
+  - 2
+  - 3
+  - 4
+  IntegrationTime: 21
+  NCamera: 6
+  RandomNoise:
+    Enable: 1
+    NSR: -1
+    Type: PLATO_SIMU
+  Sampling: 25
+  Systematics:
+    DriftLevel: min
+    Enable: 1
+    Seed: -1
+    Table: systematics/PLATO_systematics_BOL_V2.npy
+    Version: 2
+  TimeShift: 6.25
+Observation:
+  Gaps:
+    Enable: 0
+    InterQuarterGapDuration: 3.0
+    PeriodicGapCadence: 5.0
+    PeriodicGapDuration: 20.0
+    PeriodicGapJitter: 2.0
+    PeriodicGapStep: 0.0
+    RandomGapDuration: 0.0
+    RandomGapStep: 0.0
+    RandomGapTimeFraction: 0.5
+    Seed: -1
+  MasterSeed: 23262988
+  QuarterDuration:
+  - 90.0
+  - 90.0
+  - 90.0
+Oscillations:
+  DPI: -1
+  Enable: 1
+  Seed: -1
+  SurfaceEffects: 0
+  delta_nu: -1.0
+  numax: -1.0
+  q: 0.0
+Star:
+  CoreRotationFreq: 0.0
+  ES: ms
+  ID: 1111
+  Inclination: 72.5
+  Logg: 4.309
+  Mag: 10.0
+  ModelDir: models
+  ModelName: grid_v0.1_ov0-plato.hdf5
+  ModelType: grid
+  SurfaceRotationPeriod: 22.68
+  Teff: 6210.9
+Transit:
+  Enable: 1
+  LimbDarkeningCoefficients:
+  - 0.25
+  - 0.75
+  OrbitalAngle: 60.57
+  OrbitalPeriod: 5.0563
+  PlanetRadius: 0.14713
+  PlanetSemiMajorAxis: 0.05937

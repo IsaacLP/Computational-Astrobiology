@@ -1,0 +1,123 @@
+Activity:
+  Enable: 1
+  Flare:
+    Amplitude: 181.4
+    DurationDispersion: -1
+    Enable: 1
+    MeanDuration: -1
+    MeanPeriod: 4.666
+    Seed: -1
+    UpDown: 0.126
+  Seed: -1
+  Sigma: 122.96
+  Spot:
+    Contrast:
+    - 0.47
+    - 0.546
+    - 0.522
+    - 0.548
+    Enable: 1
+    Latitude:
+    - 29.02
+    - -6.94
+    - 22.58
+    - -34.71
+    Lifetime:
+    - 27.0
+    - 20.0
+    - 27.6
+    - 18.0
+    Longitude:
+    - 296.54
+    - 306.24
+    - 99.79
+    - 25.4
+    Modulation: 0.0
+    MuSpot: 0.78
+    MuStar: 0.59
+    Radius:
+    - 1.99
+    - 2.82
+    - 2.08
+    - 1.54
+    Seed: -1
+    TimeMax:
+    - -1
+    - -1
+    - -1
+    - -1
+    dOmega: 0.094
+  Tau: 1.534
+External:
+  Enable: 0
+  FilePath: examples/external_example.txt
+Granulation:
+  Enable: 1
+  Seed: -1
+  Type: 1
+Instrument:
+  GroupID:
+  - 1
+  - 2
+  - 3
+  - 4
+  IntegrationTime: 21
+  NCamera: 6
+  RandomNoise:
+    Enable: 1
+    NSR: -1
+    Type: PLATO_SIMU
+  Sampling: 25
+  Systematics:
+    DriftLevel: min
+    Enable: 1
+    Seed: -1
+    Table: systematics/PLATO_systematics_BOL_V2.npy
+    Version: 2
+  TimeShift: 6.25
+Observation:
+  Gaps:
+    Enable: 0
+    InterQuarterGapDuration: 3.0
+    PeriodicGapCadence: 5.0
+    PeriodicGapDuration: 20.0
+    PeriodicGapJitter: 2.0
+    PeriodicGapStep: 0.0
+    RandomGapDuration: 0.0
+    RandomGapStep: 0.0
+    RandomGapTimeFraction: 0.5
+    Seed: -1
+  MasterSeed: 991561080
+  QuarterDuration:
+  - 90.0
+  - 90.0
+  - 90.0
+Oscillations:
+  DPI: -1
+  Enable: 1
+  Seed: -1
+  SurfaceEffects: 0
+  delta_nu: -1.0
+  numax: -1.0
+  q: 0.0
+Star:
+  CoreRotationFreq: 0.0
+  ES: ms
+  ID: 1254
+  Inclination: 77.04
+  Logg: 4.383
+  Mag: 10.0
+  ModelDir: models
+  ModelName: grid_v0.1_ov0-plato.hdf5
+  ModelType: grid
+  SurfaceRotationPeriod: 18.43
+  Teff: 6197.1
+Transit:
+  Enable: 1
+  LimbDarkeningCoefficients:
+  - 0.25
+  - 0.75
+  OrbitalAngle: 186.01
+  OrbitalPeriod: 40.5935
+  PlanetRadius: 0.31617
+  PlanetSemiMajorAxis: 0.23518

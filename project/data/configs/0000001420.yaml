@@ -1,0 +1,123 @@
+Activity:
+  Enable: 1
+  Flare:
+    Amplitude: 199.1
+    DurationDispersion: -1
+    Enable: 1
+    MeanDuration: -1
+    MeanPeriod: 4.802
+    Seed: -1
+    UpDown: 0.165
+  Seed: -1
+  Sigma: 36.64
+  Spot:
+    Contrast:
+    - 0.634
+    - 0.545
+    - 0.547
+    - 0.577
+    Enable: 1
+    Latitude:
+    - -20.34
+    - -11.55
+    - 32.7
+    - 14.0
+    Lifetime:
+    - 16.0
+    - 14.2
+    - 17.5
+    - 17.1
+    Longitude:
+    - 233.31
+    - 320.67
+    - 318.0
+    - 123.64
+    Modulation: 0.0
+    MuSpot: 0.78
+    MuStar: 0.59
+    Radius:
+    - 1.99
+    - 2.53
+    - 1.71
+    - 2.57
+    Seed: -1
+    TimeMax:
+    - -1
+    - -1
+    - -1
+    - -1
+    dOmega: 0.073
+  Tau: 3.589
+External:
+  Enable: 0
+  FilePath: examples/external_example.txt
+Granulation:
+  Enable: 1
+  Seed: -1
+  Type: 1
+Instrument:
+  GroupID:
+  - 1
+  - 2
+  - 3
+  - 4
+  IntegrationTime: 21
+  NCamera: 6
+  RandomNoise:
+    Enable: 1
+    NSR: -1
+    Type: PLATO_SIMU
+  Sampling: 25
+  Systematics:
+    DriftLevel: min
+    Enable: 1
+    Seed: -1
+    Table: systematics/PLATO_systematics_BOL_V2.npy
+    Version: 2
+  TimeShift: 6.25
+Observation:
+  Gaps:
+    Enable: 0
+    InterQuarterGapDuration: 3.0
+    PeriodicGapCadence: 5.0
+    PeriodicGapDuration: 20.0
+    PeriodicGapJitter: 2.0
+    PeriodicGapStep: 0.0
+    RandomGapDuration: 0.0
+    RandomGapStep: 0.0
+    RandomGapTimeFraction: 0.5
+    Seed: -1
+  MasterSeed: 162956436
+  QuarterDuration:
+  - 90.0
+  - 90.0
+  - 90.0
+Oscillations:
+  DPI: -1
+  Enable: 1
+  Seed: -1
+  SurfaceEffects: 0
+  delta_nu: -1.0
+  numax: -1.0
+  q: 0.0
+Star:
+  CoreRotationFreq: 0.0
+  ES: ms
+  ID: 1420
+  Inclination: 80.42
+  Logg: 4.403
+  Mag: 10.0
+  ModelDir: models
+  ModelName: grid_v0.1_ov0-plato.hdf5
+  ModelType: grid
+  SurfaceRotationPeriod: 12.5
+  Teff: 5503.8
+Transit:
+  Enable: 1
+  LimbDarkeningCoefficients:
+  - 0.25
+  - 0.75
+  OrbitalAngle: 142.28
+  OrbitalPeriod: 5.9273
+  PlanetRadius: 0.28446
+  PlanetSemiMajorAxis: 0.06319

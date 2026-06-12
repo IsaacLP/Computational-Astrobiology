@@ -1,0 +1,123 @@
+Activity:
+  Enable: 1
+  Flare:
+    Amplitude: 141.5
+    DurationDispersion: -1
+    Enable: 1
+    MeanDuration: -1
+    MeanPeriod: 1.275
+    Seed: -1
+    UpDown: 0.177
+  Seed: -1
+  Sigma: 34.12
+  Spot:
+    Contrast:
+    - 0.499
+    - 0.608
+    - 0.526
+    - 0.418
+    Enable: 1
+    Latitude:
+    - -24.24
+    - -13.87
+    - -10.58
+    - -18.83
+    Lifetime:
+    - 25.0
+    - 22.3
+    - 21.1
+    - 16.6
+    Longitude:
+    - 198.07
+    - 306.97
+    - 339.86
+    - 358.18
+    Modulation: 0.0
+    MuSpot: 0.78
+    MuStar: 0.59
+    Radius:
+    - 2.65
+    - 1.91
+    - 2.78
+    - 2.6
+    Seed: -1
+    TimeMax:
+    - -1
+    - -1
+    - -1
+    - -1
+    dOmega: 0.098
+  Tau: 4.619
+External:
+  Enable: 0
+  FilePath: examples/external_example.txt
+Granulation:
+  Enable: 1
+  Seed: -1
+  Type: 1
+Instrument:
+  GroupID:
+  - 1
+  - 2
+  - 3
+  - 4
+  IntegrationTime: 21
+  NCamera: 6
+  RandomNoise:
+    Enable: 1
+    NSR: -1
+    Type: PLATO_SIMU
+  Sampling: 25
+  Systematics:
+    DriftLevel: min
+    Enable: 1
+    Seed: -1
+    Table: systematics/PLATO_systematics_BOL_V2.npy
+    Version: 2
+  TimeShift: 6.25
+Observation:
+  Gaps:
+    Enable: 0
+    InterQuarterGapDuration: 3.0
+    PeriodicGapCadence: 5.0
+    PeriodicGapDuration: 20.0
+    PeriodicGapJitter: 2.0
+    PeriodicGapStep: 0.0
+    RandomGapDuration: 0.0
+    RandomGapStep: 0.0
+    RandomGapTimeFraction: 0.5
+    Seed: -1
+  MasterSeed: 311664293
+  QuarterDuration:
+  - 90.0
+  - 90.0
+  - 90.0
+Oscillations:
+  DPI: -1
+  Enable: 1
+  Seed: -1
+  SurfaceEffects: 0
+  delta_nu: -1.0
+  numax: -1.0
+  q: 0.0
+Star:
+  CoreRotationFreq: 0.0
+  ES: ms
+  ID: 1368
+  Inclination: 82.43
+  Logg: 4.323
+  Mag: 10.0
+  ModelDir: models
+  ModelName: grid_v0.1_ov0-plato.hdf5
+  ModelType: grid
+  SurfaceRotationPeriod: 17.37
+  Teff: 6229.5
+Transit:
+  Enable: 1
+  LimbDarkeningCoefficients:
+  - 0.25
+  - 0.75
+  OrbitalAngle: 121.28
+  OrbitalPeriod: 8.6438
+  PlanetRadius: 0.21439
+  PlanetSemiMajorAxis: 0.0853
