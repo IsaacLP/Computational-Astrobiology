@@ -1,2 +1,5 @@
+project/psls/systematics/**   filter=lfs diff=lfs merge=lfs -text
+project/data/dataset.h5       filter=lfs diff=lfs merge=lfs -text
+project/data/models/**        filter=lfs diff=lfs merge=lfs -text
 project/data/dataset.h5 filter=lfs diff=lfs merge=lfs -text
 project/data/models/** filter=lfs diff=lfs merge=lfs -text
