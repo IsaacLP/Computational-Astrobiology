@@ -73,10 +73,19 @@ For Exercise 5, articulated the distinction between label leakage (Experiment A 
 TUTORIAL 5 \- RANDOM FOREST
 
 Date: 09/04/25  
-Hours:
+Hours: 11-13
 
-Work progression:  
-Innovations:
+Work progression:
+
+* Ran the Random Forest classifier notebook on NASA Exoplanet Archive data (~6100 confirmed planets from pscomppars), predicting a 3-class radius label (rocky / sub-Neptune / giant)  
+* The classification baseline achieved ~97% balanced accuracy and macro-F1 with 5-fold CV; permutation importance showed pl\_bmasse and pl\_dens as the dominant features  
+* Completed the optional extension (section 13): switched from classification to regression using RandomForestRegressor  
+  * Primary regression target: log10(pl\_bmasse). pl\_rade was re-added to the feature set (no longer a leakage risk since the target is not the radius class). pl\_dens was excluded to avoid algebraic leakage (density encodes mass/radius³). Cross-validated and evaluated on held-out test set with R², RMSE, and MAE. Diagnostic plots include predicted vs true and residual plots. Permutation importance confirms pl\_rade dominates via the mass-radius relation  
+  * Secondary regression target: pl\_eqt (equilibrium temperature). pl\_insol was excluded (direct insolation proxy for T\_eq). The model recovers the radiative equilibrium scaling T\_eq ∝ T\_eff \* sqrt(R\_star / a), with pl\_orbsmax and st\_teff as the top features  
+* Added a summary comparison table contrasting the classification and regression framings across metrics, leakage risks, interpretability tools, and scientific insight
+
+Innovations:  
+For the mass regression, identified and excluded pl\_dens as an algebraic proxy for leakage (density ∝ mass/radius³) rather than including it naively. For the T\_eq regression, excluded pl\_insol for the same reason (S ∝ L/a² and T\_eq ∝ S^0.25 make them algebraically coupled). This makes the feature importance physically interpretable: the model's top features match the expected terms in the analytical scaling laws, which can be used as a sanity check that the RF is not exploiting hidden shortcuts.
 
 TUTORIAL 6 \- CUDA FOR ML
 
