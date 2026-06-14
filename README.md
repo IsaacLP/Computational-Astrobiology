@@ -2,7 +2,7 @@
 
 # Computational Astrobiology — MASS UBMATF 2026
 
-This repository contains coursework for Computational Astrobiology, organized into two top-level sections: a research project and a series of ML tutorials applied to astrobiology problems.
+This repository contains coursework for Computational Astrobiology, taught by professor Andjelka Kovacevic in the University of Belgrade, part of the Master in Astrophysics and Space Science (MASS) curriculum. It is organized into two top-level sections: a research project and a series of ML tutorials applied to astrobiology problems.
 
 ## Project
 
