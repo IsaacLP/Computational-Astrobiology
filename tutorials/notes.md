@@ -53,10 +53,22 @@ For Exercise 5, derived the insolation flux from first principles using the Stef
 TUTORIAL 4 \- SUPPORT VECTOR MACHINES
 
 Date: 02/04/25  
-Hours:
+Hours: 11-13
 
-Work progression:  
-Innovations
+Work progression:
+
+* Ran the Hot Jupiter vs Non-Hot Jupiter SVM notebook on NASA Exoplanet Archive data (~6100 planets from pscomppars)  
+* The target label is defined operationally as P < 10 days and R\_p > 8 R\_Earth  
+* Ran two pre-built experiments: Experiment A (all features including pl\_orbper and pl\_rade) and Experiment B (removing those defining features) to study definition leakage  
+* Completed the missing exercises:  
+  * Exercise 1: Tested a stricter definition (P < 5 days and R\_p > 8 R\_Earth) — fewer positives (597 vs 739), coefficients sharpen on orbital period and radius  
+  * Exercise 2: Trained on only stellar features (st\_teff, st\_rad, st\_mass, st\_met, st\_logg) — performance drops significantly, confirming that orbital architecture carries most of the signal  
+  * Exercise 3: Explicit side-by-side comparison of Linear SVM vs RBF SVM across both experiments — in Experiment A both perform similarly (nearly linear boundary); in Experiment B the RBF kernel outperforms linear because indirect features create curved decision boundaries  
+  * Exercise 4: Explained physically why pl\_orbsmax and pl\_eqt remain predictive without pl\_orbper/pl\_rade — Kepler's 3rd law links period to semi-major axis, and T\_eq is set by irradiation at the planet's orbit (T\_eq ∝ T\_star \* sqrt(R\_star / a))  
+  * Exercise 5: Discussed whether the classifier is discovering astrophysics or recovering a human-made definition — concluded it is both: Experiment A is largely definition leakage, Experiment B captures real physical correlations (orbital architecture, stellar metallicity, irradiation)
+
+Innovations:  
+For Exercise 5, articulated the distinction between label leakage (Experiment A recovers the step-function threshold) and genuine physical signal (Experiment B achieves ROC AUC ~0.95 through orbital and stellar proxies), and proposed what a rigorous study would require: defining labels from independent measurements (e.g., dynamical mass from RV rather than radius from transit) to avoid feature overlap with the classification criterion.
 
 TUTORIAL 5 \- RANDOM FOREST
 
