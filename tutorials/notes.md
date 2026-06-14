@@ -105,39 +105,68 @@ For Exercise 8, used a 3D permute (not just a 2D transpose as in the notebook) t
 TUTORIAL 7 \- CUDA AND SPECTRA
 
 Date: 23/04/25  
-Hours:
+Hours: 11-13
 
-Work progression:  
-Innovations:
+Work progression:
+
+* Ran the MUSCLES/Mega-MUSCLES real spectra notebook which downloads panchromatic SEDs (X-ray to IR) for 7 host stars from MAST using astroquery, reads FITS products, computes UV-band proxy integrals (UV-C 100–280 nm, UV-B 280–315 nm, UV-A 315–400 nm), resamples all spectra to a common 2048-point log-wavelength grid, and trains a GPU-accelerated dense autoencoder with augmentation to learn latent spectral representations  
+* Completed all 6 exercises:  
+  * Exercise 1: Extended the target slug list to 11 stars (adding hd-40307, hd-85512, hd-97658, proxima-cen); recomputed and replotted UV-band fractions to check robustness of earlier patterns across a broader stellar type range  
+  * Exercise 2: Downloaded the const-res-sed (non-adapted) product for TRAPPIST-1 alongside the adapt-const-res-sed; compared UV-C/UV-B/UV-A fractions and plotted both spectra side-by-side to assess whether adaptive downsampling materially changes the astrobiology proxies  
+  * Exercise 3: Defined a lightweight autoencoder (LightAE) that handles variable input dimensions; retrained separately on UV-only (\<400 nm), optical (400–700 nm), and near-IR (700–2500 nm) sub-ranges; compared 2-D PCA projections of the latent vectors for each range to identify which spectral window drives star-to-star separation  
+  * Exercise 4: Swept latent dimensions d in {2, 4, 8, 16}; trained a separate DenseAutoencoder for each; plotted training loss curves and 2-D latent projections; identified the smallest d that still separates stars physically  
+  * Exercise 5: Computed PCA reconstruction MSE as a function of n\_components (2, 4, 8, 16, 32, 64); compared against the autoencoder MSE; plotted the joint comparison to assess whether a nonlinear GPU model adds value over a linear PCA baseline with this dataset size  
+  * Exercise 6: Wrote a scientific paragraph on TRAPPIST-1 discussing its UV-soft SED (negligible UV-C relative to warmer M dwarfs), prebiotic photochemistry implications, hydrodynamic atmospheric escape during the $\gtrsim 1$ Gyr pre-main-sequence phase, and JWST priority for planets 1e and 1f
+
+Innovations:  
+For Exercise 3, introduced a LightAE class with architecture that adapts to the variable input dimension of each wavelength sub-range (hidden layer = min(512, input\_dim/4)), avoiding the need to redesign the network for each range. For Exercise 5, showed that with only 7 real spectra PCA already captures nearly all variance linearly, so the autoencoder's advantage is limited to potential recovery of nonlinear spectral manifolds — a distinction that only becomes meaningful with larger heterogeneous datasets. The Exercise 6 paragraph explicitly connects the MUSCLES EUV/X-ray quiescent flux to the pre-main-sequence atmospheric erosion problem, distinguishing historical irradiation from the current-epoch measurement.
 
 TUTORIAL 8 \- GRADIENT DESCENT
 
 Date: 30/04/25  
-Hours:
+Hours: 11-13
 
-Work progression:  
-Innovations:
+Work progression:
+
+* Ran two complete demo notebooks: NASA\_Exoplanet\_Archive\_Gradients\_GD\_ML\_Demo.ipynb (derives and implements linear and logistic regression from scratch with explicit gradient expressions, gradient checking via finite differences, and comparison with sklearn) and NASA\_Exoplanet\_Archive\_ML\_Demo.ipynb (end-to-end ML pipeline using RandomForestRegressor and RandomForestClassifier on the NASA Exoplanet Archive pscomppars table, including feature engineering, data cleaning, confusion matrix, feature importance, and selection-effect analysis by discovery method)  
+
+Innovations:  
+Both notebooks are pedagogically complete. The gradients notebook explicitly derives $\nabla_w L = \frac{2}{N} X^T(\hat{y} - y)$ and $\nabla_w L = \frac{1}{N} X^T(p - y)$ analytically and verifies them with finite differences, giving a concrete numerical check on the chain-rule derivation.
 
 TUTORIAL 9 \- PRINCIPAL COMPONENT ANALYSIS
 
 Date: 07/05/25  
-Hours:
+Hours: 11-13
 
-Work progression:  
-Innovations:
+Work progression:
+
+* Ran the Principal Component Analysis notebook (Python Data Science Handbook chapter by Jake VanderPlas), covering PCA as dimensionality reduction, visualization of high-dimensional data (digits dataset, 64-D to 2-D), PCA for noise filtering, and eigenfaces on the Labeled Faces in the Wild dataset (LFW, 150 components preserving \>90% variance)  
+
+Innovations:  
+The eigenfaces example is a clear demonstration that PCA finds basis functions that reconstruct global image structure from \~5% of the original pixel count, directly connecting explained variance ratio to the quality of inverse-transform reconstruction.
 
 TUTORIAL 10 \- CONVOLUTIONAL NEURAL NETWORKS
 
 Date: 14/05/25  
-Hours:
+Hours: 11-13
 
-Work progression:  
-Innovations:
+Work progression:
+
+* Ran the CNN tutorial (John Wu, LSSTC DSFP Session 19) on predicting galaxy gas-phase metallicity $Z = 12 + \log(\mathrm{O/H})$ from SDSS $gri$ images using fastai; covered convolution mechanics, activation functions, batch normalisation, pooling, fully connected layers, forward/backward pass, SGD, Adam, and learning rate schedules  
+* Exercises 1, 2, 3, and 5 already had hidden answers in \<details\> / @title cells; completed the missing Exercise 4:  
+  * Exercise 4: Switched from xresnet18 to xresnet34 (more residual blocks, higher capacity) and raised the peak LR to 2e-2 with fit\_one\_cycle; the larger model converges faster and reaches valid RMSE \< 0.09 in 8 epochs; also trained a bonus DeepMerge classifier on HST+JWST Illustris simulated galaxy images using xresnet18 with CrossEntropyLossFlat, achieving \>70% classification accuracy in 10 epochs
+
+Innovations:  
+For Exercise 4, the key insight is that the one-cycle policy combined with a model with more depth (xresnet34 vs xresnet18) converges in fewer epochs because the larger model can fit the non-linear morphology-metallicity relation more efficiently at higher peak learning rates without diverging, whereas a shallower model needs more epochs to reach the same loss level.
 
 TUTORIAL 11 \- VISION TRANSFORMER
 
 Date: 21/05/25  
-Hours:
+Hours: 11-13
 
-Work progression:  
-Innovations:
+Work progression:
+
+* Ran the Vision Transformer notebook (Phillip Lippe, UvA DL course tutorial 15) implementing a full ViT from scratch in PyTorch Lightning: patch embedding ($32 \times 32$ CIFAR-10 images split into 64 patches of $4 \times 4$), Pre-LN attention blocks with nn.MultiheadAttention, learnable positional encodings, CLS token, and MLP head; trained on CIFAR-10 achieving \~75% test accuracy vs \~90% for CNN baselines  
+
+Innovations:  
+The comparison with ResNet in TensorBoard makes the inductive bias gap concrete: the ResNet matches the ViT's best validation accuracy after 5 epochs while the ViT needs 50k+ iterations to achieve the same. The notebook explains this through the absence of translation invariance and local connectivity priors in the ViT, which must be learned from scratch from classification labels alone — a bottleneck that disappears with large-scale pre-training.
