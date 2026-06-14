@@ -90,10 +90,17 @@ For the mass regression, identified and excluded pl\_dens as an algebraic proxy 
 TUTORIAL 6 \- CUDA FOR ML
 
 Date: 16/04/25  
-Hours:
+Hours: 11-13
 
-Work progression:  
-Innovations:
+Work progression:
+
+* Ran the CUDA for ML notebook covering host/device model, GPU timing with synchronisation, the CUDA execution hierarchy (threads/blocks/grids/warps), memory hierarchy, arithmetic intensity, softmax stabilisation, attention scaling, memory layout and profiling  
+* Completed these exercises:  
+  * Exercise 7: Built a 4-layer MLP (512→1024→1024→256→10), ran the PyTorch profiler on one forward pass; aten::mm dominates CUDA time, ReLU activations are fast and elementwise; discussed implications for attention models  
+  * Exercise 8: Designed a custom experiment with a 3D tensor permuted to be non-contiguous; measured sum and matmul latency for contiguous vs non-contiguous layouts; discussed memory coalescing, warp divergence, and the implicit copy triggered by reshape on non-contiguous tensors
+
+Innovations:  
+For Exercise 8, used a 3D permute (not just a 2D transpose as in the notebook) to expose the coalescing problem more clearly, and combined a reduction (sum) with a matmul after reshape to show two distinct failure modes: strided-access overhead and implicit copy overhead respectively.
 
 TUTORIAL 7 \- CUDA AND SPECTRA
 
